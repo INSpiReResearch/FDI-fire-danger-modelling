@@ -2,7 +2,7 @@
 // INSpiRe Project — Fire Danger Index (FDI) Daily Data Extraction
 // KwaZulu-Natal (KZN), South Africa
 // Google Earth Engine (GEE) Script — DAILY RESOLUTION
-// VERSION 6.1 — MEMORY-SAFE CSV EXPORT VERSION
+// VERSION 6.3 — STRATIFIED MEMORY-SAFE CSV EXPORT VERSION
 //
 // Purpose:
 //   Export daily point samples for R/Python modelling without hitting GEE memory
@@ -30,10 +30,10 @@
 //   - ERA5-Land precipitation/radiation switched to *_hourly bands to avoid
 //     overestimating daily totals from accumulated bands.
 //
-// Author:    Minenhle Ngubane (SAWS)
-// Co-author: Stephanie Landman (SAWS)
-// Project:   INSpiRe (2024–2029), South African Weather Service
-// =============================================================================
+// Author:    Minenhle Ngubane
+// Project:   Fire danger modelling research workflow
+// Note:      This script is for research and workflow development and does not
+//            represent an official operational fire danger warning system.
 
 
 // =============================================================================
