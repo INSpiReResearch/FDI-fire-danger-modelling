@@ -90,7 +90,7 @@ Used to derive:
 - elevation
 - slope
 - aspect
-- topographic wetness proxy
+- topographic wetness index
 - local topographic position index
 - landscape topographic position index
 - rain-shadow index
@@ -104,22 +104,25 @@ Used to represent built-up surface intensity.
 
 ### GHSL Settlement Model
 
-Used to represent settlement classification.
+Represents settlement classification.
 
 ### South African National Land Cover 2022
 
-Used to represent land-cover class, fuel-related classes, flammability score, WUI interface, WUI intermix and agricultural interface.
+Represents land-cover class, fuel classes, flammability score, WUI interface, WUI intermix and agricultural interface.
 
 ## Night-time lights
 
 ### VIIRS Night-time Lights
 
-Used as a proxy for human activity and settlement intensity.
+A proxy for human activity and settlement intensity.
 
 ## Biomass / fuel structure proxy
 
 ### GEDI L4B Aboveground Biomass Density
 
-Used as a biomass/fuel-structure proxy.
+## Biomass / fuel-structure proxy
 
-The `MU` band is treated as aboveground biomass density, not RH98 canopy height.
+### GEDI L4B Aboveground Biomass Density
+
+GEDI L4B Aboveground Biomass Density is used as proxy for fuel biomass and vegetation structure.
+The `MU` band represents estimated mean aboveground biomass density at 1km resolution (in Mg/ha), will assist when determining fuel availability 
