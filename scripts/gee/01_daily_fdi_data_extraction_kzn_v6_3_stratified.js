@@ -11,8 +11,8 @@
 // How to run:
 //   1. Run one month at a time.
 //   2. Export CSV only.
-//   3. Start with nSamplesPerDay = 300. If memory errors continue, reduce to 200.
-//   4. Repeat for 2020–2024 and January–December.
+//   3. Start with nSamplesPerDay = 300. If recieve memory errors continue, reduce to 200.
+//   4. Repeat for 2020–2025 and January–December.
 //
 // Main changes from previous version:
 //   - Monthly run default instead of full May–September.
