@@ -41,3 +41,8 @@ Status: Currently extracting monthly files
 - Train baseline Logistic Regression and Random Forest models.
 - Evaluate model performance using ROC-AUC, PR-AUC and confusion matrices.
 - Convert fire occurrence probability into Fire Occurrence Index and Fire Danger Index classes.
+
+## Planned improvement
+
+- Add VIIRS active fire detections to the fire-label workflow and compare it to MODIS.
+- Evaluate if VIIRS improves detection of smaller fire events
