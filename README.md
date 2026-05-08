@@ -1,4 +1,4 @@
-# FDI-fire-danger-modelling
+# FDI-fire-danger-modelling 
 Fire Danger Index modelling workflow using weather, vegetation, topographic, settlement and historical fire variables.
 
 # Fire Danger Index Modelling Workflow
