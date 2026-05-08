@@ -1,14 +1,11 @@
 # =============================================================================
-# Combine yearly GEE daily sample CSVs
+# Combining yearly GEE daily sample CSVs
 # Fire Danger Index modelling workflow
 #
 # Purpose:
 #   Combines 12 monthly Google Earth Engine CSV exports into one yearly dataset,
-#   performs basic checks, removes invalid weather rows, and saves combined and
-#   cleaned yearly outputs.
+#   to perform basic checks, remove invalid weather rows and produce cleaned yearly outputs.
 #
-# Note:
-#   Large CSV files should not be committed to GitHub.
 # =============================================================================
 
 library(readr)
@@ -18,7 +15,7 @@ library(stringr)
 
 # ---- User settings ----
 
-year_to_process <- 2021
+year_to_process <- 2021   # 2020, 2021, 2022, 2023, 2024, 2025
 
 base_dir <- "C:/Users/Minenhle.Ngubane/Downloads/FDI_daily_samples"
 
@@ -35,7 +32,6 @@ cat("All files found:", length(all_files), "\n")
 print(basename(all_files))
 
 # Select only monthly CSV files.
-# Excludes combined/clean outputs so they are not accidentally re-read.
 files <- all_files[
   grepl("\\.csv$", basename(all_files), ignore.case = TRUE) &
     !grepl("combined|clean", basename(all_files), ignore.case = TRUE)
@@ -44,7 +40,7 @@ files <- all_files[
 cat("\nMonthly CSV files selected:", length(files), "\n")
 print(basename(files))
 
-# Stop if not 12 monthly files.
+# Ensure there is 12 monthly files.
 if (length(files) != 12) {
   stop("Expected 12 monthly CSV files. Check for missing months or duplicate files.")
 }
@@ -86,8 +82,7 @@ print(summary(df_year$vpd_max_kpa))
 print(summary(df_year$precip_mm))
 
 # ---- Clean data ----
-# Fix tiny negative rainfall values caused by floating-point precision.
-# Remove invalid weather rows.
+# Fix and remove invalid weather rows. 
 
 df_year_clean <- df_year %>%
   mutate(
@@ -108,7 +103,6 @@ cat("\nClean sample type by fire label:\n")
 print(table(df_year_clean$sample_type, df_year_clean$fire_label, useNA = "ifany"))
 
 # ---- Save outputs ----
-# Outputs are saved in a combined_outputs folder so they do not sit with monthly files.
 
 out_dir <- file.path(data_dir, "combined_outputs")
 dir.create(out_dir, showWarnings = FALSE)
