@@ -27,11 +27,15 @@ Checks completed:
 - Unique dates confirmed: 365.
 - Fire/no-fire label structure confirmed.
 
+## 2022 
+Status: Currently extracting monthly files 
+
 ## Next steps
 
 - Complete yearly combination for 2022.
 - Complete yearly combination for 2023.
 - Complete yearly combination for 2024.
+- Complete yearly combination for 2025.
 - Combine all cleaned yearly files into one master training dataset.
 - Conduct exploratory data analysis.
 - Train baseline Logistic Regression and Random Forest models.
