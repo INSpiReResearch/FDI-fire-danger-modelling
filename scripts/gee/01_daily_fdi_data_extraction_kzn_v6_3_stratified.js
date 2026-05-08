@@ -42,12 +42,10 @@
 
 var CONFIG = {
 
-  // ---- Change this each run: 2020, 2021, 2022, 2023, 2024 ----
+  // ---- Change this each run: 2020, 2021, 2022, 2023, 2024, 2025 ----
   exportYear: 2020,
 
   // ---- Run ONE MONTH at a time to avoid GEE memory errors ----
-  // January example. Change month-by-month: 02-01/02-28, 03-01/03-31, etc.
-  // Keep this as a monthly period even though the project now covers all months.
   seasonStart: '02-01',
   seasonEnd:   '02-29',
 
@@ -68,7 +66,7 @@ var CONFIG = {
   sanlcAsset:     'users/minenhlengubane12/SA_NLC_2022_GEO',
   useSANLC:       true,
 
-  // Prevailing moisture-bearing wind direction for KZN
+  // Moisture bearing wind direction
   // Easterly from Indian Ocean = 90 degrees
   prevailingWindDir: 90
 };
@@ -115,7 +113,7 @@ function maskS2clouds(image) {
   var mask = scl.neq(3)   // cloud shadow
     .and(scl.neq(8))      // medium probability cloud
     .and(scl.neq(9))      // high probability cloud
-    .and(scl.neq(10));    // cirrus
+    .and(scl.neq(10));    // cirrus clouds
   return image.updateMask(mask);
 }
 
@@ -191,7 +189,7 @@ var elevation = srtm1km.rename('elevation');
 var slope     = ee.Terrain.slope(srtm1km).rename('slope');
 var aspect    = ee.Terrain.aspect(srtm1km).rename('aspect');
 
-// TWI proxy. This is a relative terrain-moisture proxy, not a full hydrological TWI.
+// TWI proxy (relative terrain moisture proxy).
 var slopeRad = slope.multiply(Math.PI / 180);
 var tanSlope = slopeRad.tan().max(0.001);
 var flowProxy = elevation.focal_mean({radius: 3000, units: 'meters', kernelType: 'circle'});
@@ -216,7 +214,6 @@ var windExposure = tpi_local
   .rename('wind_exposure');
 
 // ERA5 grid mean elevation for lapse-rate correction in R.
-// Important: do NOT reduce 30 m SRTM directly to 9 km because GEE may need
 // ~80,000+ input pixels per output pixel. First reduce to 1 km, then aggregate
 // the 1 km surface to the ERA5-scale grid.
 var era5Elevation = srtm1km
@@ -252,7 +249,6 @@ var ghslBuiltup = ee.Image('JRC/GHSL/P2023A/GHS_BUILT_S/2020')
   .clip(kznGeom);
 
 // ---- GHSL Settlement Model ----
-// Use the direct year image ID.
 var ghslSmod = ee.Image('JRC/GHSL/P2023A/GHS_SMOD_V2-0/2020')
   .select('smod_code')
   .rename('ghsl_smod')
@@ -261,7 +257,6 @@ var ghslSmod = ee.Image('JRC/GHSL/P2023A/GHS_SMOD_V2-0/2020')
   .clip(kznGeom);
 
 // ---- GEDI L4B Aboveground Biomass Density ----
-// Note: this is NOT RH98 canopy height. MU = mean AGBD in Mg/ha.
 var gedi = ee.Image('LARSE/GEDI/GEDI04_B_002')
   .select('MU')
   .rename('gedi_agbd_mg_ha')
@@ -299,10 +294,8 @@ if (CONFIG.useSANLC) {
   var naturalVeg = sanlcClass.gte(2).and(sanlcClass.lte(5)).unmask(0);
 
   // WUI at 1 km needs a neighbourhood definition.
-  // The previous threshold/logic was too strict because it only flagged built-up
   // pixels that also touched vegetation. For fire danger modelling, we want fuel
-  // pixels close to settlements, because that is where ignition/exposure risk is
-  // operationally more meaningful.
+  // pixels close to settlements, it is where ignition/exposure risk is
 
   // Fuel vegetation mask: natural vegetation + plantation fuels.
   // SANLC classes: 2 grassland, 3 shrubland/fynbos, 4 thicket/bushveld,
@@ -312,12 +305,11 @@ if (CONFIG.useSANLC) {
     .eq(1)
     .unmask(0);
 
-  // Use any built surface at 1 km as settlement presence.
-  // Later we can sensitivity-test thresholds such as >50 or >100.
+  // Using built surface at 1 km as settlement presence.
+  // do sensitivity-test threshold such as: >50 or >100.
   var builtupMask = ghslBuiltup.gt(0).unmask(0);
 
-  // At a 1 km working grid, 500 m is too tight. A 1.5 km neighbourhood captures
-  // the current and adjacent cells more reliably.
+  // A 1.5 km neighbourhood captures current and adjacent cells better
   var builtProximity = builtupMask
     .focal_max({radius: 1500, units: 'meters', kernelType: 'circle'})
     .unmask(0);
@@ -408,8 +400,7 @@ var modisNDVI_season = ee.ImageCollection('MODIS/061/MOD13A2')
   .filterBounds(kznGeom)
   .select('NDVI')
   .map(function(img) {
-    // Do not clip MODIS images here. Clipping before reprojection can cause
-    // SR-ORG:6974 to EPSG transform errors during table export.
+    
     return img.multiply(0.0001)
       .set('system:time_start', img.get('system:time_start'));
   });
@@ -419,7 +410,6 @@ var modisNDVI_allYears = ee.ImageCollection('MODIS/061/MOD13A2')
   .filterBounds(kznGeom)
   .select('NDVI')
   .map(function(img) {
-    // Do not clip MODIS images here. Reproject derived outputs later instead.
     return img.multiply(0.0001)
       .set('system:time_start', img.get('system:time_start'));
   });
@@ -511,7 +501,7 @@ function getDailyERA5(date) {
       var wind_mean = dailyMet.select('wind_ms').mean().rename('wind_mean_ms');
 
       // Use the Earth Engine hourly precipitation band, not the accumulated
-      // total_precipitation band, otherwise daily totals are overestimated.
+      // total_precipitation band
       var precip = daily.select('total_precipitation_hourly')
         .sum()
         .multiply(1000)
@@ -521,7 +511,7 @@ function getDailyERA5(date) {
         .mean()
         .rename('soil_moisture');
 
-      // Use the hourly radiation band to avoid summing cumulative forecast-step values.
+      // Using hourly radiation band to avoid summing cumulative forecast-step values.
       var solar = daily.select('surface_solar_radiation_downwards_hourly')
         .sum()
         .rename('solar_rad');
@@ -658,9 +648,8 @@ function getDailyFireLabel(date) {
     (function() {
       var fireMaskMax = dayFire.select('FireMask').max();
 
-      // Important: reproject MODIS-derived bands to the 1 km working CRS and do
-      // not clip here. Clipping MODIS sinusoidal bands can trigger SR-ORG:6974
-      // transform errors during table export.
+      // Reprojecting MODIS-derived bands to the 1 km working CRS and clip. Clipping MODIS sinusoidal bands to trigger SR-ORG:6974 and
+      // transform errors when exporting data
       var fireLabel = fireMaskMax.gte(8)
         .rename('fire_label')
         .unmask(0)
@@ -723,8 +712,6 @@ function getDailyTSLF(date) {
         var yearStart = ee.Date.fromYMD(year, 1, 1);
 
         // Cast to Double so every image in the collection has the same band type.
-        // Without this, GEE can fail with a homogeneous ImageCollection error
-        // because yearStart.millis() has a different Long range for each year.
         var millis = ee.Image.constant(yearStart.millis()).toDouble()
           .add(burnDate.subtract(1).toDouble().multiply(24 * 60 * 60 * 1000))
           .updateMask(burned)
@@ -803,8 +790,8 @@ function buildDailyStack(date) {
     .addBands(terrainStack)
     .addBands(humanStaticStack)
     .addBands(gedi);
-    // Do not unmask the final full stack. Static/absence variables are already
-    // unmasked individually, while keeping weather masks allows stratifiedSample
+    // Static/absence variables are unmasked individually, keeping weather unmasked individually and keep 
+    // masks stratifiedSample
     // with dropNulls:true to avoid edge pixels with invalid zero weather values.
 
   return stack
@@ -832,8 +819,7 @@ var dailyCollection = ee.ImageCollection(
   })
 );
 
-// Avoid heavy inspection, e.g. dailyCollection.first().bandNames(), because it can
-// trigger memory errors. The export below will evaluate lazily in batch mode.
+
 print('Daily collection prepared. Heavy band inspection skipped.');
 
 
@@ -846,10 +832,9 @@ print('--- Preparing daily stratified samples for CSV export ---');
 var nFire = Math.round(CONFIG.nSamplesPerDay * CONFIG.fireRatio);
 var nNoFire = Math.round(CONFIG.nSamplesPerDay * (1 - CONFIG.fireRatio));
 
-// Use stratifiedSample instead of separate updateMask().sample() calls.
-// This prevents fake 'fire' rows with blank predictor values on days where
-// there are too few or no fire pixels. stratifiedSample only returns pixels
-// that truly belong to the requested fire_label class.
+// Using stratifiedSample instead of separate updateMask().sample() calls. Preventing fake 'fire' rows with blank predictor values 
+// when there are too few or no fire pixels. the stratifiedSample only returns pixels which are 
+// too few or no fire pixels and those that belog to fire_label class.
 var allSamples = dailyCollection.map(function(img) {
 
   var sampled = img.stratifiedSample({
@@ -892,7 +877,7 @@ Export.table.toDrive({
     // Metadata
     'date_str','year','month','day','doy','sample_type','lon','lat',
 
-    // Fire labels — response and diagnostics. Do not use diagnostics as predictors in R.
+    // Fire labels — response and diagnostics. (will not be used as predictors in R)
     'fire_label','fire_high_conf','fire_any_conf','modis_fire_count','frp_mw',
 
     // Weather
@@ -929,25 +914,11 @@ print('Export folder:', CONFIG.driveFolder);
 print('Export file prefix:', 'INSpiRe_KZN_daily_samples_v6_3_stratified_' + runTag);
 
 
-// =============================================================================
-// 14. GEOTIFF EXPORTS DISABLED
-// =============================================================================
-// GeoTIFF exports are intentionally disabled in this memory-safe version.
-// First export the daily CSV samples. Once the model is trained, export only final
-// prediction rasters or static layers separately.
-
-
-// =============================================================================
-// 15. MAP VISUALISATION DISABLED
-// =============================================================================
-// Heavy daily layers are intentionally not displayed to prevent memory errors.
-// Keep only the KZN boundary map layer from Section 1.
-
 
 // =============================================================================
 // 16. ALL-MONTH RUN GUIDE
 // =============================================================================
-// The modelling period now covers the full year, not only May–September.
+// The modelling period now covers the full year, not only May–September as previously done.
 // Run these monthly periods for each year:
 //   January:   seasonStart = '01-01', seasonEnd = '01-31'
 //   February:  seasonStart = '02-01', seasonEnd = '02-28'
@@ -963,16 +934,14 @@ print('Export file prefix:', 'INSpiRe_KZN_daily_samples_v6_3_stratified_' + runT
 //   November:  seasonStart = '11-01', seasonEnd = '11-30'
 //   December:  seasonStart = '12-01', seasonEnd = '12-31'
 //
-// Do not run January–December in one GEE task. Run one month at a time.
-// For 2020–2024, this will create 60 monthly CSV files.
+// Run one month at a time.
+// For 2020–2025, this will create 72 monthly CSV files.
 //
-// If memory errors continue:
+// If there is memory errors:
 //   1. Reduce nSamplesPerDay from 300 to 200.
 //   2. Split a month into two periods, e.g. 01-01 to 01-15 and 01-16 to 01-31.
-//   3. Temporarily set useSANLC = false to check whether the uploaded SANLC layer
-//      is causing the issue.
-//
-// In R/Python, do not use these as predictors:
+
+// in the R (Python) these predictors will not be used: 
 //   fire_label, fire_high_conf, fire_any_conf, modis_fire_count, frp_mw,
 //   sample_type, date_str, lon, lat
 // =============================================================================
