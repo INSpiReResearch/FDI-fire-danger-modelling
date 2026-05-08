@@ -15,8 +15,8 @@ Main variables:
 - 10 m u-wind component
 - 10 m v-wind component
 - hourly total precipitation
-- volumetric soil water layer 1
-- hourly surface solar radiation downwards
+- volumetric soil water layer 1 (soil moisture variable)
+- hourly surface solar radiation downwards (affects how quickly fuels dry)
 
 Derived variables include:
 
@@ -33,9 +33,10 @@ Derived variables include:
 
 ## Fire occurrence data
 
-### MODIS Active Fire
+### MODIS Active Fire: used to create daily fire/no-fire labels
 
-Used to create daily fire/no-fire labels.
+### VIIRS active fire — planned enhancement: VIIRS active fire detections for better spatial resolution than MODIS, detecting smaller fire events. will test combined active fire label: MODIS & VIIRS detections) 
+()
 
 Products:
 
@@ -50,7 +51,7 @@ Derived variables:
 - `modis_fire_count`
 - `frp_mw`
 
-Only `fire_label` is used as the response variable. Fire diagnostic fields are not used as predictors.
+The `fire_label` is used as the response variable.
 
 ## Burned-area and fire-history data
 
