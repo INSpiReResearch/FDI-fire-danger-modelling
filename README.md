@@ -35,14 +35,12 @@ fdi-fire-danger-modelling/
 │
 ├── scripts/
 │   ├── gee/
-│   │   ├── 01_sampling_all_months.js
-│   │   ├── 02_export_predictors.js
-│   │   └── 03_export_validation_data.js
+│   │   ├── 01_daily_fdi_data_extraction_kzn_v6_3_stratified.js
+│   │   
 │   │
 │   ├── r/
-│   │   ├── 01_train_models.R
-│   │   ├── 02_map_predict.R
-│   │   └── 03_model_evaluation.R
+│   │   ├── 01_combine_yearly_samples.R
+│  
 │   
 │
 ├── docs/
